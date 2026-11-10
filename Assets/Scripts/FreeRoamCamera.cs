@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
@@ -20,12 +21,10 @@ public class FreeRoamCamera : MonoBehaviour
 
     void Start()
     {
-        // Set the initial rotation.
         Vector3 angles = transform.eulerAngles;
         pitch = angles.x;
         yaw = angles.y;
 
-        // Increase how far the camera can see.
         GetComponent<Camera>().farClipPlane = viewDistance;
 
         LockMouse();
@@ -33,19 +32,16 @@ public class FreeRoamCamera : MonoBehaviour
 
     void Update()
     {
-        // Unlock the mouse with Escape.
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             UnlockMouse();
         }
 
-        // Click to capture the mouse again.
         if (!mouseLocked && Input.GetMouseButtonDown(0))
         {
             LockMouse();
         }
 
-        // Only look around when the mouse is locked.
         if (mouseLocked)
         {
             float mouseX = Input.GetAxis("Mouse X")
@@ -80,12 +76,10 @@ public class FreeRoamCamera : MonoBehaviour
         if (Input.GetKey(KeyCode.S)) vertical -= 1f;
         if (Input.GetKey(KeyCode.W)) vertical += 1f;
 
-        // Move relative to the direction the camera faces.
         Vector3 movement =
             transform.right * horizontal +
             transform.forward * vertical;
 
-        // Fly up and down independently of the viewing angle.
         if (Input.GetKey(KeyCode.Space))
             movement += Vector3.up;
 
@@ -94,6 +88,30 @@ public class FreeRoamCamera : MonoBehaviour
 
         transform.position +=
             movement.normalized * speed * Time.deltaTime;
+    }
+
+    // Teleport camera to a waypoint.
+    public void TeleportTo(Transform target)
+    {
+        if (target == null)
+            return;
+
+        transform.SetPositionAndRotation(
+            target.position,
+            target.rotation
+        );
+
+        // Update mouse-look angles to match the new rotation.
+        Vector3 angles = transform.eulerAngles;
+
+        pitch = angles.x;
+
+        if (pitch > 180f)
+            pitch -= 360f;
+
+        yaw = angles.y;
+
+        pitch = Mathf.Clamp(pitch, -89f, 89f);
     }
 
     void LockMouse()
